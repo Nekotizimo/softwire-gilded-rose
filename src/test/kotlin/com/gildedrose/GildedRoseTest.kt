@@ -10,14 +10,12 @@ internal class GildedRoseTest {
         val items = listOf(
             Item("Apples", 10, 50),
             Item("Passes", 3, 20),
-            Item("Oranges", 1, 0)
         )
         val app = GildedRose(items)
         app.updateQuality()
         val expected = listOf(
             Item("Apples", 9, 49),
             Item("Passes", 2, 19),
-            Item("Oranges", 0, 0)
         )
         for (i in expected.indices) {
             assertEquals(expected[i].toString(), app.items[i].toString())
@@ -28,15 +26,13 @@ internal class GildedRoseTest {
     fun normalExpiredItemDegrades() {
         val items = listOf(
             Item("Apples", 0, 50),
-            Item("Passes", -2, 1),
-            Item("Oranges", -100, 0)
+            Item("Passes", -2, 5),
         )
         val app = GildedRose(items)
         app.updateQuality()
         val expected = listOf(
             Item("Apples", -1, 48),
-            Item("Passes", -3, 0),
-            Item("Oranges", -101, 0)
+            Item("Passes", -3, 3),
         )
         for (i in expected.indices) {
             assertEquals(expected[i].toString(), app.items[i].toString())
@@ -65,14 +61,56 @@ internal class GildedRoseTest {
         val items = listOf(
             Item("Aged Brie", 0, 0),
             Item("Aged Brie", 5, 25),
-            Item("Aged Brie", 10, 50) // TODO: want case sensitive?
         )
         val app = GildedRose(items)
         app.updateQuality()
         val expected = listOf(
-            Item("Aged Brie", -1, 2), // TODO: should it +2 after expired?
+            Item("Aged Brie", -1, 2),
             Item("Aged Brie", 4, 26),
-            Item("Aged Brie", 9, 50),
+        )
+        for (i in expected.indices) {
+            assertEquals(expected[i].toString(), app.items[i].toString())
+        }
+    }
+
+    @Test
+    fun qualityBottomsOutAt0() {
+        val items = listOf(
+            Item("Apples", 1, 0),
+            Item("Passes", 0, 1),
+            Item("Conjured Oranges", 8, 1),
+            Item("Conjured Oranges", -8, 2)
+        )
+        val app = GildedRose(items)
+        app.updateQuality()
+        val expected = listOf(
+            Item("Apples", 0, 0),
+            Item("Passes", -1, 0),
+            Item("Conjured Oranges", 7, 0),
+            Item("Conjured Oranges", -9, 0)
+        )
+        for (i in expected.indices) {
+            assertEquals(expected[i].toString(), app.items[i].toString())
+        }
+    }
+
+    @Test
+    fun qualityCapsAt50() {
+        val items = listOf(
+            Item("Aged Brie", 1, 50),
+            Item("Aged Brie", 0, 49),
+            Item("Conjured Aged Brie", 2, 49),
+            Item("Conjured Aged Brie", -2, 47),
+            Item("Backstage passes to a TAFKAL80ETC concert", 15, 50),
+        )
+        val app = GildedRose(items)
+        app.updateQuality()
+        val expected = listOf(
+            Item("Aged Brie", 0, 50),
+            Item("Aged Brie", -1, 50),
+            Item("Conjured Aged Brie", 1, 50),
+            Item("Conjured Aged Brie", -3, 50),
+            Item("Backstage passes to a TAFKAL80ETC concert", 14, 50),
         )
         for (i in expected.indices) {
             assertEquals(expected[i].toString(), app.items[i].toString())
@@ -83,13 +121,13 @@ internal class GildedRoseTest {
     fun backstagePassesIncreasesOneMoreThanTenDays() {
         val items = listOf(
             Item("Backstage passes to a TAFKAL80ETC concert", 11, 0),
-            Item("Backstage passes to a TAFKAL80ETC concert", 15, 50),
+            Item("Backstage passes to a TAFKAL80ETC concert", 15, 40),
         )
         val app = GildedRose(items)
         app.updateQuality()
         val expected = listOf(
             Item("Backstage passes to a TAFKAL80ETC concert", 10, 1),
-            Item("Backstage passes to a TAFKAL80ETC concert", 14, 50),
+            Item("Backstage passes to a TAFKAL80ETC concert", 14, 41),
         )
         for (i in expected.indices) {
             assertEquals(expected[i].toString(), app.items[i].toString())
@@ -148,7 +186,7 @@ internal class GildedRoseTest {
     @Test
     fun conjuredItemsDegradesTwice() {
         val items = listOf(
-            Item("Conjured", 10, 50), // TODO: match whole word?
+            Item("Conjured", 10, 50),
             Item("Conjured Potion", 1, 20),
             Item("conjured cocoa", 0, 10)
         )
